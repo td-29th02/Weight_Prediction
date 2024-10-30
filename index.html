@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>Dự đoán cân nặng</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row justify-content-center align-items-center" style="height: 100vh;">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title text-center">Dự đoán cân nặng</h2>
+                            <form id="predictionForm">
+                                <div class="form-group">
+                                    <label for="height">Chiều cao (cm):</label>
+                                    <input type="number" id="height" name="height" class="form-control" step="any" required>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="predict()">Dự đoán</button>
+                            </form>
+                            <div id="result" class="mt-3"></div>
+                            <img id="chart" src="" class="mt-3" style="width:100%;">
+                            <img id="loss_chart" src="" class="mt-3" style="width:100%;">
+                            <img id="confusion_matrix_linear" src="" class="mt-3" style="width:100%;">
+                            <img id="confusion_matrix_ridge" src="" class="mt-3" style="width:100%;">
+                            <img id="confusion_matrix_neural" src="" class="mt-3" style="width:100%;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            async function predict() {
+                const height = document.getElementById('height').value;
+
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ height: parseFloat(height) }),
+                });
+
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <p>Cân nặng dự đoán theo Hồi quy tuyến tính: ${data.predicted_weight_linear.toFixed(2)} kg</p>
+                    <p>Cân nặng dự đoán theo Hồi quy Ridge: ${data.predicted_weight_ridge.toFixed(2)} kg</p>
+                    <p>Cân nặng dự đoán theo Neural Network: ${data.predicted_weight_neural.toFixed(2)} kg</p>
+                    <p>Cân nặng dự đoán theo Stacking: ${data.predicted_weight_stacking.toFixed(2)} kg</p>
+                `;
+                document.getElementById('chart').src = data.chart_url;
+                document.getElementById('loss_chart').src = data.loss_chart_url;
+                document.getElementById('confusion_matrix_linear').src = data.confusion_matrix_linear_url;
+                document.getElementById('confusion_matrix_ridge').src = data.confusion_matrix_ridge_url;
+                document.getElementById('confusion_matrix_neural').src = data.confusion_matrix_neural_url;
+            }
+        </script>
+    </body>
+</html>
+
